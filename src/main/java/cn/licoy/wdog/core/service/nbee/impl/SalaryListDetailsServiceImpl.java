@@ -38,7 +38,9 @@ public class SalaryListDetailsServiceImpl extends ServiceImpl<SalaryListDetailsM
     @Override
     public Page<SalaryListDetailsVO> getAllSalaryListDetailsBySplitPage(FindSalaryListDetailsDTO findSalaryListDetailsDTO) {
         EntityWrapper<SalaryListDetails> wrapper = new EntityWrapper<>();
+        wrapper.eq("salary_list_id",findSalaryListDetailsDTO.getSalaryListId());
         wrapper.orderBy("create_date",findSalaryListDetailsDTO.getAsc());
+
         Page<SalaryListDetails> userPage = this.selectPage(new Page<>(findSalaryListDetailsDTO.getPage(),findSalaryListDetailsDTO.getPageSize()), wrapper);
         Page<SalaryListDetailsVO> userVOPage = new Page<>();
             try {

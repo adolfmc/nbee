@@ -3,7 +3,7 @@ package cn.licoy.wdog.common.controller;
 import cn.licoy.wdog.common.util.AppotUtils;
 import cn.licoy.wdog.common.util.JwtUtil;
 import cn.licoy.wdog.common.util.POIUtil;
-import cn.licoy.wdog.core.entity.nbee.Accountingentries;
+import cn.licoy.wdog.core.entity.nbee.*;
 import cn.licoy.wdog.core.service.nbee.AccountingentriesService;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -276,5 +276,59 @@ public class AppotBaseController extends BaseInfo {
         accountingentries.setOutId(out);
         accountingentries.setDesc( biztype+amount.toString()    );
         accountingentriesService.insert(accountingentries);
+    }
+
+
+    public BigDecimal getALLFee(List<BigDecimal> workdays , List<Date> kaoqingdate, Product product  , AccountCore accountCompany , BigDecimal payAmount){
+
+        BigDecimal allfee = new BigDecimal(0);
+        //2.5
+        if( "按每笔发放百元 - 每笔发放每百元，按照比例".equals(  product.getFeeModel() )){
+            allfee =  payAmount.multiply( product.getFeeModel5V().divide(new BigDecimal(100)) ) ;
+
+
+            //2.1
+        }else if( "有X天考勤信息，每天发".equals(  product.getFeeModel() )){
+            /** 1) 判断该考勤当天是否已收费 **/
+
+            /** 2) */
+            //2.2
+        }else if( "按发放次数 -- 每次发放收(XX)".equals(  product.getFeeModel() )){
+            allfee =  product.getFeeModel2V();
+
+
+            //2.3
+        }else if( "按每笔发放小时数 - 每笔发放覆盖的每个工作小时收费".equals(  product.getFeeModel() )){
+            BigDecimal allhours = new BigDecimal(0);
+
+
+            for(BigDecimal workday : workdays){
+                allhours = allhours.add( workday ) ;
+            }
+
+
+            allfee =  product.getFeeModel3V().multiply(allhours);
+
+
+            //2.4
+        }else if( "按每笔发放覆盖天数 - 每笔发放覆盖的天数，每天收取".equals(  product.getFeeModel() )){
+
+            Map<String,Object> day = new HashMap();
+
+            for(Date kaoqingDate : kaoqingdate){
+                day.put( kaoqingDate.toString(),0 );
+            }
+
+            allfee =  product.getFeeModel4V().multiply( new BigDecimal(day.keySet().size() ));
+
+        }
+
+        //小于0
+        BigDecimal compfeebanlance =  accountCompany.getT3feeBanlance().subtract(allfee);
+        if( compfeebanlance.compareTo( new BigDecimal( 0 ))==-1     ){
+            return null;
+        }
+
+        return allfee;
     }
 }

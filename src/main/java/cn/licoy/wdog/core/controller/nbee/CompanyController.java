@@ -82,13 +82,14 @@ public class CompanyController  extends AppotBaseController{
     @ApiOperation(value = "删除Company")
     @SysLogs("删除Company")
     public ResponseResult remove(@PathVariable("id") @ApiParam(value = "Company标识ID") String id){
-        CompanyService.removeCompany(id);
 
         Company company = CompanyService.selectById(id);
         EntityWrapper<AccountCore> wrapperAccountCore = new EntityWrapper<>();
         wrapperAccountCore.eq("company_id",company.getName()) ;
         wrapperAccountCore.eq("account_type","用人单位") ;
         accountCoreService.delete(wrapperAccountCore);
+
+        CompanyService.removeCompany(id);
         return ResponseResult.e(ResponseCode.OK);
     }
 

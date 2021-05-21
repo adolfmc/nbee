@@ -1,19 +1,11 @@
 package cn.licoy.wdog.common.util;
 
-import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.toolkit.ReflectionKit;
-import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.BasicResponseHandler;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.crazycake.shiro.RedisManager;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.text.ParseException;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -240,8 +232,13 @@ public class AppotUtils {
 
 //            System.out.println("2020-11-21".substring(8,10));
         //本周起始加1
-            System.out.println( DateFormatUtils.format(new Date(),"HH") );
-            System.out.println( Integer.valueOf( "08"));
-            System.out.println("2020-11-11 12:00".substring(11,16));
+//            System.out.println( DateFormatUtils.format(new Date(),"HH") );
+//            System.out.println( Integer.valueOf( "08"));
+//            System.out.println("2020-11-11 12:00".substring(11,16));
+
+
+            BigDecimal b1 = new BigDecimal(10);
+            BigDecimal b2 = new BigDecimal(11);
+            System.out.println( b1.subtract( b2));
         }
 }
