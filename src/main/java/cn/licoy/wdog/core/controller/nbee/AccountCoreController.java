@@ -8,12 +8,16 @@ import cn.licoy.wdog.core.dto.nbee.AccountCoreAddDTO;
 import cn.licoy.wdog.core.dto.nbee.AccountCoreUpdateDTO;
 import cn.licoy.wdog.core.dto.nbee.FindAccountCoreDTO;
 import cn.licoy.wdog.core.entity.nbee.AccountCore;
+import cn.licoy.wdog.core.entity.nbee.Company;
 import cn.licoy.wdog.core.service.nbee.AccountCoreService;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author mc
@@ -47,7 +51,17 @@ public class AccountCoreController  extends AppotBaseController{
     @ApiOperation(value = "companyPanel")
     @SysLogs("分页获取AccountCore数据")
     public ResponseResult companyPanel(@RequestBody @Validated @ApiParam(value = "companyPanel") FindAccountCoreDTO findAccountCoreDTO){
-        AccountCore accountCore= AccountCoreService.findAccountCoreById("2");
+        EntityWrapper<Company> wrapperCompany = new EntityWrapper<>();
+        wrapperCompany.eq("admin_name",findAccountCoreDTO.getPersonName()) ;
+        List<Company> company =companyService.selectList(wrapperCompany);
+        if(company.isEmpty() || company.size()>1){
+            return ResponseResult.e(ResponseCode.FAIL_SETTING_COMPANY_ADMIN);
+        }
+
+        EntityWrapper<AccountCore> wrapperAccountCore = new EntityWrapper<>();
+        wrapperAccountCore.eq("company_id",company.get(0).getName() ) ;
+        wrapperAccountCore.eq("account_type","用人单位") ;
+        AccountCore accountCore= AccountCoreService.selectOne(wrapperAccountCore);
         return ResponseResult.e(ResponseCode.OK,accountCore);
     }
 

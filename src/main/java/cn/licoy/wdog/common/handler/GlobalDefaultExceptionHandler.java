@@ -51,7 +51,7 @@ public class GlobalDefaultExceptionHandler {
     @ResponseBody
     public ResponseResult requestExceptionHandler(Exception e){
         e.printStackTrace();
-        return ResponseResult.builder().msg("服务器飘了，管理员去拿刀修理了~").status(ResponseCode.FAIL.code).build();
+        return ResponseResult.builder().msg("异常提示: "+e.getMessage() +",  系统异常请联系管理员处理!").status(ResponseCode.FAIL.code).build();
     }
 
 

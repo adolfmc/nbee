@@ -1,11 +1,13 @@
 package cn.licoy.wdog.common.controller;
 
 import cn.licoy.wdog.common.util.AppotUtils;
+import cn.licoy.wdog.common.util.CheckIdCard;
 import cn.licoy.wdog.common.util.JwtUtil;
 import cn.licoy.wdog.common.util.POIUtil;
 import cn.licoy.wdog.core.entity.nbee.*;
-import cn.licoy.wdog.core.service.nbee.AccountingentriesService;
+import cn.licoy.wdog.core.service.nbee.*;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -40,6 +42,21 @@ public class AppotBaseController extends BaseInfo {
     @Autowired
     public AccountingentriesService accountingentriesService ;
 
+    @Autowired
+    public CustomerService customerService ;
+    @Autowired
+    public TppAlipayService tppAlipayService;
+    @Autowired
+    public TppTransferService tppTransferService;
+    @Autowired
+    public ProjectService projectService;
+    @Autowired
+    public TppTixianService tppTixianService;
+    @Autowired
+    public AccountSalarydetailsService accountSalarydetailsService;
+
+    @Autowired
+    public CompanyService companyService;
 
     @Autowired
     public HttpServletRequest myHttpRequest;
@@ -279,7 +296,7 @@ public class AppotBaseController extends BaseInfo {
     }
 
 
-    public BigDecimal getALLFee(List<BigDecimal> workdays , List<Date> kaoqingdate, Product product  , AccountCore accountCompany , BigDecimal payAmount){
+    public BigDecimal getALLFee(List<BigDecimal> workdays , List<Date> kaoqingdate, Product product  , AccountCore accountCompany , BigDecimal payAmount) throws Exception {
 
         BigDecimal allfee = new BigDecimal(0);
         //2.5
@@ -326,9 +343,42 @@ public class AppotBaseController extends BaseInfo {
         //小于0
         BigDecimal compfeebanlance =  accountCompany.getT3feeBanlance().subtract(allfee);
         if( compfeebanlance.compareTo( new BigDecimal( 0 ))==-1     ){
-            return null;
+            throw new Exception("客户手续费余额不足,请充值手续费后操作,当前手续费 余额为: "+accountCompany.getT3feeBanlance()+"元");
         }
 
         return allfee;
+    }
+
+
+
+
+
+    public void check_data(String customer,String inWorkdate, String idCard, String workhours, String amount) throws Exception {
+
+        try{
+            DateUtils.parseDate(inWorkdate ,"YYYY/MM/dd") ;
+        }catch (Exception ex){
+            throw new Exception("客户 ("+customer+") "+"入职时间格式异常(正确格式 YYYY/MM/dd): "+inWorkdate);
+        }
+
+        try{
+            if(CheckIdCard.validate(idCard)==Boolean.FALSE){
+                throw new Exception("客户 ("+customer+") "+"身份证格式异常: "+idCard);
+            }
+        }catch (Exception ex){
+            throw new Exception("客户 ("+customer+") "+"身份证格式异常: "+idCard);
+        }
+
+        try{
+            new BigDecimal(workhours);
+        }catch (Exception ex){
+            throw new Exception("客户 ("+customer+") "+"考勤小时数填写错误: "+workhours);
+        }
+
+        try{
+            new BigDecimal(amount);
+        }catch (Exception ex){
+            throw new Exception("客户 ("+customer+") "+"金额异常: "+amount);
+        }
     }
 }

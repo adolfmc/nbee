@@ -26,6 +26,15 @@
     </properties>
 
     <dependencies>
+        <!--alipay-->
+        <!-- https://mvnrepository.com/artifact/com.alipay.sdk/alipay-sdk-java -->
+        <dependency>
+            <groupId>com.alipay.sdk</groupId>
+            <artifactId>alipay-sdk-java</artifactId>
+            <version>4.13.58.ALL</version>
+        </dependency>
+
+
         <!-- Excel中表格POI插件 -->
         <dependency>
             <groupId>org.apache.poi</groupId>

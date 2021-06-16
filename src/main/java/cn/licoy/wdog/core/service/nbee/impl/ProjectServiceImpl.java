@@ -87,7 +87,25 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
     public void add(ProjectAddDTO addDTO) {
         try {
             Project Project = new Project();
-            BeanUtils.copyProperties(addDTO,Project);
+
+            String sb = "";
+            for(String v :addDTO.getCheckBill() ){
+                sb = sb + v +",";
+            }
+
+            Project.setCheckBill( sb.substring( 0, sb.length() - 1));
+            Project.setCompanyAlipay( addDTO.getCompanyAlipay());
+            Project.setCompanyCheckAccount(addDTO.getCompanyCheckAccount());
+            Project.setCompanyId( addDTO.getCompanyId() );
+            Project.setCompanyMakerAccount( addDTO.getCompanyMakerAccount());
+            Project.setCompanySendAccount( addDTO.getCompanySendAccount());
+            Project.setEmployer( addDTO.getEmployer());
+            Project.setMakerBill( addDTO.getMakerBill());
+            Project.setName( addDTO.getName());
+            Project.setProductId( addDTO.getProductId() );
+            Project.setPublicAdminAccount( addDTO.getPublicAdminAccount() );
+            Project.setSendBill( addDTO.getSendBill() );
+
             Project.setCreateDate(new Date());
             this.insert(Project);
         }catch (Exception e){
@@ -97,14 +115,37 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
 
     @Override
     public void update(String id, ProjectUpdateDTO updateDTO) {
-        Project user = this.selectById(id);
-        if(user==null){
+        Project Project = this.selectById(id);
+        if(Project==null){
             throw RequestException.fail(
                     String.format("更新失败，不存在ID为 %s 的Project",id));
         }
         try {
-            BeanUtils.copyProperties(updateDTO,user);
-            this.updateById(user);
+            BeanUtils.copyProperties(updateDTO,Project);
+
+
+            String sb = "";
+            for(String v :updateDTO.getCheckBill() ){
+                sb = sb + v +",";
+            }
+
+            Project.setCheckBill( sb.substring( 0, sb.length() - 1));
+            Project.setCompanyAlipay( updateDTO.getCompanyAlipay());
+            Project.setCompanyCheckAccount(updateDTO.getCompanyCheckAccount());
+            Project.setCompanyId( updateDTO.getCompanyId() );
+            Project.setCompanyMakerAccount( updateDTO.getCompanyMakerAccount());
+            Project.setCompanySendAccount( updateDTO.getCompanySendAccount());
+            Project.setEmployer( updateDTO.getEmployer());
+            Project.setMakerBill( updateDTO.getMakerBill());
+            Project.setName( updateDTO.getName());
+            Project.setProductId( updateDTO.getProductId() );
+            Project.setPublicAdminAccount( updateDTO.getPublicAdminAccount() );
+            Project.setSendBill( updateDTO.getSendBill() );
+
+            Project.setCreateDate(new Date());
+
+
+            this.updateById(Project);
         }catch (Exception e){
             throw RequestException.fail("Project信息更新失败",e);
         }

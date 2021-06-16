@@ -1208,6 +1208,9 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="Maven: com.alipay.sdk:alipay-sdk-java:4.13.58.ALL" level="project" />
+    <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.1.1" level="project" />
+    <orderEntry type="library" name="Maven: org.bouncycastle:bcprov-jdk15on:1.62" level="project" />
     <orderEntry type="library" name="Maven: org.apache.poi:poi:3.8" level="project" />
     <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.10" level="project" />
     <orderEntry type="library" name="Maven: org.apache.poi:poi-ooxml:3.8" level="project" />
@@ -1226,7 +1229,6 @@
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-autoconfigure:1.5.12.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:springloaded:1.2.8.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: commons-httpclient:commons-httpclient:3.1" level="project" />
-    <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.0.4" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpclient:4.5.9" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore:4.4.9" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-starter-jdbc:1.5.12.RELEASE" level="project" />
@@ -1260,7 +1262,6 @@
     <orderEntry type="library" name="Maven: com.rabbitmq:amqp-client:4.0.3" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.amqp:spring-amqp:1.7.7.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: com.auth0:java-jwt:3.2.0" level="project" />
-    <orderEntry type="library" name="Maven: org.bouncycastle:bcprov-jdk15on:1.55" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-starter-cache:1.5.12.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-context:4.3.16.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-context-support:4.3.16.RELEASE" level="project" />

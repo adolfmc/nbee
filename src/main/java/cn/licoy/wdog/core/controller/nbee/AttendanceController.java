@@ -4,6 +4,7 @@ import cn.licoy.wdog.common.annotation.SysLogs;
 import cn.licoy.wdog.common.bean.ResponseCode;
 import cn.licoy.wdog.common.bean.ResponseResult;
 import cn.licoy.wdog.common.controller.AppotBaseController;
+import cn.licoy.wdog.common.util.AppotUtils;
 import cn.licoy.wdog.core.dto.nbee.*;
 import cn.licoy.wdog.core.entity.nbee.*;
 import cn.licoy.wdog.core.service.nbee.*;
@@ -29,6 +30,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -129,8 +131,11 @@ public class AttendanceController  extends AppotBaseController{
         titlerRow.createCell(5).setCellValue("姓名");
         titlerRow.createCell(6).setCellValue("身份证");
         titlerRow.createCell(7).setCellValue("手机号");
-        titlerRow.createCell(8).setCellValue("考勤天数");
+        titlerRow.createCell(8).setCellValue("工作小时");
         titlerRow.createCell(9).setCellValue("发放金额");
+        titlerRow.createCell(10).setCellValue("入职日期");
+        titlerRow.createCell(11).setCellValue("发放状态");
+        titlerRow.createCell(12).setCellValue("发放说明");
 
         //4.遍历数据,创建数据行
         String kaoqing_datee = null;
@@ -150,6 +155,9 @@ public class AttendanceController  extends AppotBaseController{
             dataRow.createCell(7).setCellValue( preSalaryListDetails1.getMobile());
             dataRow.createCell(8).setCellValue( preSalaryListDetails1.getWorkdays().intValue() );
             dataRow.createCell(9).setCellValue( preSalaryListDetails1.getAmount().doubleValue() );
+            dataRow.createCell(10).setCellValue( DateFormatUtils.format(preSalaryListDetails1.getInWorkdate(),"YYYY/MM/dd") );
+            dataRow.createCell(11).setCellValue( preSalaryListDetails1.getIsPaysalaryStatus() );
+            dataRow.createCell(12).setCellValue( preSalaryListDetails1.getIsPaySalary() );
             company_name = preSalaryListDetails1.getCompany();
         }
         //5.创建文件名
@@ -164,31 +172,6 @@ public class AttendanceController  extends AppotBaseController{
         //输出流
         hssfWorkbook.write(outputStream);
 
-
-
-
-
-
-//        if(file.exists()){
-//            response.setContentType("application/octet-stream");
-//            response.setHeader("content-type", "application/octet-stream");
-//            response.setHeader("Content-Disposition", "attachment;fileName=" + URLEncoder.encode(filename,"utf8"));
-//            byte[] buffer = new byte[1024];
-//            //输出流
-//            OutputStream os = null;
-//            try(
-//                FileInputStream fis= new FileInputStream(file);
-//                BufferedInputStream bis = new BufferedInputStream(fis);) {
-//                os = response.getOutputStream();
-//                int i = bis.read(buffer);
-//                while(i != -1){
-//                    os.write(buffer);
-//                    i = bis.read(buffer);
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
     }
 
 
@@ -242,7 +225,7 @@ public class AttendanceController  extends AppotBaseController{
 
 
 
-
+    //考勤上传
     @PostMapping(value = {"/add"})
     @ApiOperation(value = "添加Attendance")
     @SysLogs("添加Attendance")
@@ -277,31 +260,54 @@ public class AttendanceController  extends AppotBaseController{
         addDTO.setBatchNo(batchno);
         addDTO.setCreateUser( getLoginUserName());
         addDTO.setProductName(product.getName());
-        AttendanceService.add(addDTO);
+
 
         String uuid2 = UUID.randomUUID().toString().replace("-","") ;
 
 
         BigDecimal payAmount = new BigDecimal(0) ;
+        BigDecimal onJobMunber = new BigDecimal(0) ;
         for (int i=0;i<results.size();i++){
             ArrayList<String> row = results.get(i);
             if(i==0){
                 continue;
             }
-            String xlsimportdatee = row.get(0);
+            String inWorkdate = row.get(0);
             String customerName = row.get(1);
             String idCard = row.get(2);
             String mobile = row.get(3);
-            String workdays = row.get(4);
+            String workhours = row.get(4);
+
+            //考勤数据校验
+            check_data(customerName,inWorkdate,idCard, workhours ,"0") ;
+            Date inworkdate = DateUtils.parseDate(inWorkdate ,"YYYY/MM/dd");
+
+
+
+            EntityWrapper<Customer> wrapperCustomer = new EntityWrapper<>();
+            wrapperCustomer.eq("id_card",idCard);
+
+            Customer customer = customerService.selectOne(wrapperCustomer ) ;
+            if(customer==null ){
+                customer = new Customer();
+                customer.setName( customerName );
+                customer.setIdCard( idCard );
+                customer.setMobile( mobile );
+            }
+            customer.setCurrentCompany( company.getName() );
+            customerService.insertOrUpdate( customer) ;
+
+
 
             AttendanceDetailsAddDTO attendanceDetails = new AttendanceDetailsAddDTO();
             attendanceDetails.setAttendanceId(uuid);
-            attendanceDetails.setImporttime(DateUtils.parseDate(xlsimportdatee ,"YYYY/MM/dd"));
+
+            attendanceDetails.setInWorkdate( inworkdate );
             attendanceDetails.setCreateDate(new Date());
             attendanceDetails.setCustomerName( customerName );
             attendanceDetails.setIdcard( idCard );
             attendanceDetails.setMobile( mobile );
-            attendanceDetails.setWorkdays( new BigDecimal( workdays ));
+            attendanceDetails.setWorkdays( new BigDecimal( workhours ));
             attendanceDetails.setCompany(company.getName());
             attendanceDetails.setBatchNo(batchno);
             attendanceDetails.setProjectName(project.getName());
@@ -309,7 +315,6 @@ public class AttendanceController  extends AppotBaseController{
             attendanceDetails.setCreateUser( getLoginUserName());
             attendanceDetails.setProductName( product.getName() );
             attendanceDetails.setBatchName(addDTO.getFilename());
-            attendanceDetailsService.add(attendanceDetails);
 
 
             PreSalaryListDetailsAddDTO preSalaryListDetailsAddDTO  = new PreSalaryListDetailsAddDTO();
@@ -320,28 +325,53 @@ public class AttendanceController  extends AppotBaseController{
             preSalaryListDetailsAddDTO.setProductName(product.getName());
             preSalaryListDetailsAddDTO.setCreateUser(getLoginUserName());
 
-            if("每日发放金额".equals( product.getPayModel()) ){
-                preSalaryListDetailsAddDTO.setAmount( product.getPayModel2Dayamount().multiply( new BigDecimal( workdays ) )  );
+            //TODO 发放模式改为一种
+//            if("每日发放金额".equals( product.getPayModel()) ){
+//                preSalaryListDetailsAddDTO.setAmount( product.getPayModel2Dayamount().multiply( new BigDecimal( workhours ) )  );
+//                payAmount = payAmount.add( preSalaryListDetailsAddDTO.getAmount() ) ;
+//            }
+
+            //入职后多少天发放
+            if("入职".equals( product.getPayModel())  ){
+                preSalaryListDetailsAddDTO.setAmount( product.getPayModel1Payamount()  );
+
+            }
+
+            Date currentDate = DateUtils.parseDate(new SimpleDateFormat("YYYY/MM/dd").format(new Date())  ,"YYYY/MM/dd");
+//            currentDate 比 inworkdate 多的天数
+            if(  AppotUtils.differentDays( inworkdate, currentDate) > product.getPayModel1Dayslater().intValue() ){
                 payAmount = payAmount.add( preSalaryListDetailsAddDTO.getAmount() ) ;
+                onJobMunber = onJobMunber.add( new BigDecimal(1));
+
+                preSalaryListDetailsAddDTO.setIsPaySalary("满足发放条件");
+                preSalaryListDetailsAddDTO.setIsPaysalaryStatus("满足发放条件");
+
+                attendanceDetails.setIsPaysalaryStatus("满足发放条件" );
+                attendanceDetails.setIsPaySalary("满足发放条件");
             }else{
-                preSalaryListDetailsAddDTO.setAmount( product.getPayModel1Payamount().multiply( new BigDecimal( workdays ) )  );
-                payAmount = payAmount.add( preSalaryListDetailsAddDTO.getAmount() ) ;
+                preSalaryListDetailsAddDTO.setIsPaySalary("不满足发放条件,入职距今"+AppotUtils.differentDays( inworkdate, currentDate)+"天,要求入职后"+ product.getPayModel1Dayslater().intValue() +"天发放!");
+                preSalaryListDetailsAddDTO.setIsPaysalaryStatus("不满足发放条件");
+
+                attendanceDetails.setIsPaysalaryStatus("不满足发放条件" );
+                attendanceDetails.setIsPaySalary("不满足发放条件,入职距今"+AppotUtils.differentDays( inworkdate, currentDate)+"天,要求入职后"+ product.getPayModel1Dayslater().intValue() +"天发放!");
             }
 
             preSalaryListDetailsAddDTO.setName( customerName );
             preSalaryListDetailsAddDTO.setMobile( mobile );
             preSalaryListDetailsAddDTO.setIdCard( idCard  ) ;
             preSalaryListDetailsAddDTO.setKaoqingDate( addDTO.getKaoqingDate() );
-            preSalaryListDetailsAddDTO.setWorkdays( new BigDecimal( workdays ) );
+            preSalaryListDetailsAddDTO.setInWorkdate( inworkdate );
+            preSalaryListDetailsAddDTO.setWorkdays( new BigDecimal( workhours ) );
             preSalaryListDetailsAddDTO.setBatchNo(batchno);
             preSalaryListDetailsAddDTO.setBatchName(addDTO.getFilename() );
+
+
+            attendanceDetailsService.add(attendanceDetails);
             preSalaryListDetailsService.add(preSalaryListDetailsAddDTO);
 
         }
 
-
-
-
+        AttendanceService.add(addDTO);
 
         PreSalaryListAddDTO preSalaryListAddDTO = new PreSalaryListAddDTO();
         preSalaryListAddDTO.setId(uuid2);
@@ -349,28 +379,22 @@ public class AttendanceController  extends AppotBaseController{
         preSalaryListAddDTO.setCompany( company.getName());
         preSalaryListAddDTO.setProjectName( project.getName());
         preSalaryListAddDTO.setCreateDate(new Date());
-        preSalaryListAddDTO.setPayNumber( new BigDecimal( results.size() - 1 ));
-        //在职人数 TODO
-        preSalaryListAddDTO.setOnJobMunber(  new BigDecimal( results.size() - 1 ));
+        preSalaryListAddDTO.setPayNumber(onJobMunber );
+        //满足发放人数 TODO
+        preSalaryListAddDTO.setOnJobMunber(   new BigDecimal( results.size() - 1 )  );
         preSalaryListAddDTO.setPreSalaryListCreatetime( new Date());
         preSalaryListAddDTO.setCreateUser( getLoginUserName() );
         preSalaryListAddDTO.setProductName( product.getName() );
         preSalaryListAddDTO.setPayAmount( payAmount );
-        preSalaryListAddDTO.setPayNumber( customer_numbers );
         preSalaryListAddDTO.setKaoqingDate( addDTO.getKaoqingDate() );
         preSalaryListAddDTO.setBatchName(addDTO.getFilename());
         preSalaryListService.add(preSalaryListAddDTO);
-
-
-
-
-
-
-
-
-
         return ResponseResult.e(ResponseCode.OK);
     }
+
+
+
+
 
     @PostMapping(value = {"/update/{id}"})
     @ApiOperation(value = "更新Attendance")

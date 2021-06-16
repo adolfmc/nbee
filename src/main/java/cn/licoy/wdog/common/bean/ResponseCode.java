@@ -24,7 +24,8 @@ public enum ResponseCode {
     FAIL(-1,"操作失败"),
     LOGOUT_FAIL(-2,"注销登录失败"),
     SING_IN_INPUT_EMPTY(-5,"账户和密码均不能为空"),
-    NOT_SING_IN(-6,"用户未登录或身份异常");
+    NOT_SING_IN(-6,"用户未登录或身份异常"),
+    FAIL_SETTING_COMPANY_ADMIN(-7,"该管理员下有且只能关联一家公司,请确认管理员关联公司是否正确!");
 
     public Integer code;
 

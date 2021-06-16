@@ -52,8 +52,8 @@ spring:
       #      最大支持请求大小
       max-request-size: 100MB
 
-filepath: C:/mc/works/biz_nbee/xls/
-#filepath: /home/biz_new_bee/webapps/xls/
+#filepath: C:/mc/works/biz_nbee/xls/
+filepath: /home/biz_new_bee/webapps/xls/
 
 server:
   compression:
